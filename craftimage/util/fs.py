@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from ..filetree import FileTree
 
 
 def safe_mkdir(path: Path):
@@ -34,3 +35,31 @@ def create_directory_tree(root: Path, rng, max_dirs: int, max_depth: int):
         dirs.append(new_dir)
 
     return dirs
+
+def ensure_dir(
+    root_path: Path,
+    root_node: FileTree,
+    rel_parts: list[str],
+) -> tuple[Path, FileTree]:
+    """
+    Create directories only as needed and mirror them into FileTree.
+    """
+    path = root_path
+    node = root_node
+
+    for part in rel_parts:
+        path = path / part
+        safe_mkdir(path)
+
+        existing = next(
+            (c for c in node.children if c.type == "dir" and c.name == part),
+            None,
+        )
+        if existing:
+            node = existing
+        else:
+            new = FileTree(name=part, type="dir")
+            node.children.append(new)
+            node = new
+
+    return path, node

@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 from .context import GenerationConfig, GenerationContext
@@ -7,24 +8,44 @@ from .generator import generate_structure
 from .diskimage import create_disk_image_from_dir
 
 
-def parse_counts(count_args):
+ALLOWED_TYPES = {"archives", "videos", "images", "documents", "other"}
+
+def parse_counts(count_args, *, allowed_types=ALLOWED_TYPES):
     result = {}
     if not count_args:
         return result
+
     for arg in count_args:
         parts = [p.strip() for p in arg.split(",") if p.strip()]
         for part in parts:
             if "=" not in part:
-                raise ValueError(f"Invalid --count spec: '{part}'")
+                raise ValueError(
+                    f"Invalid --count spec '{part}'. Expected TYPE=N"
+                )
+
             t, n = part.split("=", 1)
-            result[t.strip()] = int(n)
+            t = t.strip()
+
+            if t not in allowed_types:
+                raise ValueError(
+                    f"Invalid type '{t}' in --count. "
+                    f"Allowed types: {', '.join(sorted(allowed_types))}"
+                )
+
+            try:
+                result[t] = int(n)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid count for type '{t}': '{n}' is not an integer"
+                )
+
     return result
 
 
 def build_parser():
     p = argparse.ArgumentParser(
         prog="craftimage",
-        description="Generate synthetic forensic directory trees and disk images."
+        description="Generate synthetic forensic disk images."
     )
 
     p.add_argument("--sources", type=Path, required=True)
@@ -72,7 +93,7 @@ def main(argv=None):
     ctx = GenerationContext(config=config, pools=pools)
 
     print(f"[INFO] Generating structure into {args.output} ...")
-    generate_structure(ctx, args.output)
+    tree = generate_structure(ctx, args.output)
     print("[OK] Directory tree generated.")
 
     if args.disk_image:
@@ -83,3 +104,5 @@ def main(argv=None):
             size_mb=args.image_size_mb,
             filesystem=args.filesystem,
         )
+
+    print(f"[OUTPUT] Generating structure tree \n {json.dumps(tree.as_dict(), indent=2)}")
