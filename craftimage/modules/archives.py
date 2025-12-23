@@ -45,4 +45,5 @@ class ArchiveModule(BaseModule):
                     zf.write(fpath, rel.as_posix())
 
         shutil.rmtree(tmp, ignore_errors=True)
+        ctx.record_generated(archive_path, "archives")
         return archive_path

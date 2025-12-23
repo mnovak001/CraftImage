@@ -50,6 +50,7 @@ class GenerationContext:
     pools: SourcePools
     rng: random.Random = field(default_factory=random.Random)
     remaining: Dict[str, int] = field(default_factory=dict)
+    generated_types: Dict[Path, str] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.config.seed is not None:
@@ -78,3 +79,6 @@ class GenerationContext:
             return None, None
         t = self.rng.choice(candidates)
         return t, self.draw_source_file(t)
+
+    def record_generated(self, path: Path, type_name: str):
+        self.generated_types[path.resolve()] = type_name

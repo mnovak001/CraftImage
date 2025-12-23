@@ -1,10 +1,12 @@
 import argparse
+import json
 from pathlib import Path
 
 from .context import GenerationConfig, GenerationContext
 from .sources import load_source_pools
 from .generator import generate_structure
 from .diskimage import create_disk_image_from_dir
+from .util.fs import build_tree_representation
 
 
 def parse_counts(count_args):
@@ -83,3 +85,5 @@ def main(argv=None):
             size_mb=args.image_size_mb,
             filesystem=args.filesystem,
         )
+        tree = build_tree_representation(args.output, ctx.generated_types)
+        print(json.dumps(tree, indent=2))

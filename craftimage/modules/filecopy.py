@@ -17,4 +17,5 @@ class FileCopyModule(BaseModule):
         safe_mkdir(target_dir)
         dest = target_dir / src.name
         shutil.copy2(src, dest)
+        ctx.record_generated(dest, self.type_name)
         return dest

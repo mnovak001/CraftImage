@@ -34,3 +34,25 @@ def create_directory_tree(root: Path, rng, max_dirs: int, max_depth: int):
         dirs.append(new_dir)
 
     return dirs
+
+
+def build_tree_representation(root: Path, type_lookup: dict[Path, str]):
+    root = root.resolve()
+
+    def build_node(path: Path):
+        if path.is_dir():
+            children = [
+                build_node(child)
+                for child in sorted(path.iterdir(), key=lambda p: p.name.lower())
+            ]
+            return {
+                "name": path.name,
+                "type": "directory",
+                "children": children,
+            }
+        return {
+            "name": path.name,
+            "type": type_lookup.get(path.resolve(), "unknown"),
+        }
+
+    return build_node(root)
