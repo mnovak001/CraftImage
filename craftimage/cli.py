@@ -64,7 +64,15 @@ def build_parser():
 
     # disk-image options
     p.add_argument("--disk-image", type=Path)
-    p.add_argument("--image-size-mb", type=int, default=1024)
+    p.add_argument(
+        "--image-size-mb",
+        type=int,
+        default=None,
+        help=(
+            "Override disk image size in MB. "
+            "If omitted, the size is computed from source file sizes."
+        ),
+    )
     p.add_argument("--filesystem", choices=["ext4", "fat32"], default="ext4")
 
     return p
