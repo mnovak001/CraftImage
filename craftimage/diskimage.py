@@ -32,7 +32,7 @@ def create_disk_image_from_dir(source_dir: Path, image_path: Path, size_mb: int 
     image_path.parent.mkdir(parents=True, exist_ok=True)
 
     source_size_bytes = _compute_source_size_bytes(source_dir)
-    needed_mb = max(1, math.ceil(source_size_bytes / (1024 * 1024) + 2))
+    needed_mb = max(1, math.ceil(source_size_bytes / (1024 * 1024) + 50))
 
     if size_mb is None:
         size_mb = needed_mb
